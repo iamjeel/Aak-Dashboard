@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react'
 
-type Role = 'admin' | 'pharmacy'
+export type Role = 'admin' | 'warehouseAdmin' | 'pharmacy'
 
 const RoleContext = createContext<{ role: Role; setRole: (r: Role) => void }>({
   role: 'pharmacy',

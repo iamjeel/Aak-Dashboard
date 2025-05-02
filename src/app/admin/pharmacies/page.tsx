@@ -76,7 +76,7 @@ export default function CreatePharmacyPage() {
     e.preventDefault()
     setLoading(true)
 
-    const res = await fetch('/api/create-pharmacy', {
+    const res = await fetch('/api/pharmacy/create-pharmacy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),

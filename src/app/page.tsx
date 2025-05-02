@@ -1,8 +1,15 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
       <div className="max-w-2xl text-center">
         {/* Logo (you can replace with an <img /> if you have a logo file) */}
+        <Image className='flex mx-auto '
+          src="/images/AAk.png"
+          alt="AAK Deliveries Logo"
+          width='100'
+          height='100' />
         <div className="text-4xl font-bold text-red-500 mb-4 tracking-wide">
           AAK Deliveries Inc.
         </div>

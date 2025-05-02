@@ -1,37 +1,40 @@
-// app/layout.tsx
-import './globals.css'
-import { Caudex } from 'next/font/google'
-import { RoleProvider } from '@/context/RoleContext'
-import { Toaster } from 'react-hot-toast'
-import { SupabaseProvider } from './utils/supabase-provider'
+import "./globals.css";
+import { Caudex } from "next/font/google";
+import { RoleProvider } from "@/context/RoleContext";
+import { Toaster } from "react-hot-toast";
+import SessionProviderWrapper from "@/app/components/SessionProviderWrapper"; 
 
-const caudex = Caudex({ subsets: ['latin'], weight: ['400', '700'] })
+const caudex = Caudex({ subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata = {
-  title: 'AAK Deliveries Inc',
-  description: 'Delivery Dashboard',
-}
+  title: "AAK Deliveries Inc",
+  description: "Delivery Dashboard",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <body className={`${caudex.className} bg-black text-white`}>
-        <SupabaseProvider>
+    <html lang="en" className={caudex.className}>
+      <body className="bg-black text-white">
+        <SessionProviderWrapper>
           <RoleProvider>
             <Toaster
               position="top-right"
               toastOptions={{
                 style: {
-                  background: '#111',
-                  color: '#fff',
-                  border: '1px solid #f00',
+                  background: "#111",
+                  color: "#fff",
+                  border: "1px solid #f00",
                 },
               }}
             />
             {children}
           </RoleProvider>
-        </SupabaseProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
-  )
+  );
 }
