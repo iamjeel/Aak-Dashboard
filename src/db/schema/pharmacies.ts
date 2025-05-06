@@ -10,6 +10,7 @@ export const pharmacies = pgTable("pharmacies", {
   contactName: text("contact_name").notNull(), // Updated to contact_name
   phone: text("phone").notNull(),
   timezone: text("timezone").notNull(),
+  category: text("category"),
 
   // Existing (slightly adjusted)
   pharmacyName: text("pharmacy_name").notNull(), // Renamed from 'name' to 'pharmacy_name'

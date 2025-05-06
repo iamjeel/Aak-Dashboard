@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/pgsql";
 import { pharmacies } from "@/db/schema/pharmacies";
 
-export async function POST(req: Request) {
+export async function DELETE(req: Request) {
   const body = await req.json();
   const { pharmacy_id } = body;
 

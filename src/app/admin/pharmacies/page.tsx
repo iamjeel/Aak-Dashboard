@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const planDeliveries: Record<string, Record<string, number>> = {
   subscription: {
@@ -11,89 +11,109 @@ const planDeliveries: Record<string, Record<string, number>> = {
     Premium: 1500,
   },
   punch_card: {
-    '250': 250,
-    '500': 500,
-    '750': 750,
+    "250": 250,
+    "500": 500,
+    "750": 750,
   },
-}
+};
 
 export default function CreatePharmacyPage() {
-  const router = useRouter()
+  const router = useRouter();
 
-  const defaultPlanType = 'subscription'
-  const defaultPlanName = Object.keys(planDeliveries[defaultPlanType])[0]
+  const defaultPlanType = "subscription";
+  const defaultPlanName = Object.keys(planDeliveries[defaultPlanType])[0];
 
   const [form, setForm] = useState({
-    email: '',
-    username: '',
-    password: '',
-    pharmacy_name: '',
-    contact_name: '',
-    phone: '',
-    address: '',
-    timezone: '',
+    email: "",
+    username: "",
+    password: "",
+    pharmacy_name: "",
+    contact_name: "",
+    phone: "",
+    address: "",
+    timezone: "",
     plan_type: defaultPlanType,
     plan_name: defaultPlanName,
     allocated_deliveries: planDeliveries[defaultPlanType][defaultPlanName],
-  })
+    category: "pharmacy", // default category
+  });
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-    setForm((prev) => ({ ...prev, timezone: tz }))
-  }, [])
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setForm((prev) => ({ ...prev, timezone: tz }));
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
 
     setForm((prev) => {
-      if (name === 'plan_type') {
-        const newPlanName = Object.keys(planDeliveries[value])[0]
-        const newDeliveries = planDeliveries[value][newPlanName]
+      if (name === "plan_type") {
+        const newPlanName = Object.keys(planDeliveries[value])[0];
+        const newDeliveries = planDeliveries[value][newPlanName];
         return {
           ...prev,
           plan_type: value,
           plan_name: newPlanName,
           allocated_deliveries: newDeliveries,
-        }
+        };
       }
 
-      if (name === 'plan_name') {
-        const newDeliveries = planDeliveries[form.plan_type][value]
+      if (name === "plan_name") {
+        const newDeliveries = planDeliveries[form.plan_type][value];
         return {
           ...prev,
           plan_name: value,
           allocated_deliveries: newDeliveries,
-        }
+        };
       }
 
-      return { ...prev, [name]: value }
-    })
-  }
+      if (name === "category") {
+        // Fetch next username from API based on category
+        fetch(`/api/pharmacy/generate-username?category=${value}`)
+          .then((res) => res.json())
+          .then((data) => {
+            setForm((prev) => ({
+              ...prev,
+              category: value,
+              username: data.username,
+            }));
+          })
+          .catch(() => {
+            toast.error("Failed to generate username");
+          });
+        return prev;
+      }
+
+      return { ...prev, [name]: value };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
-    const res = await fetch('/api/pharmacy/create-pharmacy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/pharmacy/create-pharmacy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
-    })
+    });
 
-    const result = await res.json()
+    const result = await res.json();
 
     if (!res.ok) {
-      toast.error(`Error: ${result.error}`)
-      setLoading(false)
-      return
+      toast.error(`Error: ${result.error}`);
+      setLoading(false);
+      return;
     }
 
-    toast.success('Pharmacy created successfully!')
-    setLoading(false)
-    router.push('/admin/dashboard')
-  }
+    toast.success("Pharmacy created successfully!");
+    setLoading(false);
+    router.push("/admin/dashboard");
+  };
 
   return (
     <div className="p-8 text-white">
@@ -231,7 +251,9 @@ export default function CreatePharmacyPage() {
 
         {/* Allocated Deliveries */}
         <div>
-          <label className="block font-semibold mb-1">Allocated Deliveries</label>
+          <label className="block font-semibold mb-1">
+            Allocated Deliveries
+          </label>
           <input
             name="allocated_deliveries"
             type="number"
@@ -241,6 +263,20 @@ export default function CreatePharmacyPage() {
           />
         </div>
 
+        {/* Category */}
+        <div>
+          <label className="block font-semibold mb-1">Category</label>
+          <select
+            name="category"
+            value={form.category}
+            onChange={handleChange}
+            className="w-full p-2 border border-red-500 bg-black text-white rounded"
+          >
+            <option value="pharmacy">Pharmacy</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
         {/* Submit Button */}
         <div>
           <button
@@ -248,10 +284,10 @@ export default function CreatePharmacyPage() {
             disabled={loading}
             className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white disabled:opacity-50 w-full"
           >
-            {loading ? 'Creating...' : 'Create Pharmacy'}
+            {loading ? "Creating..." : "Create Pharmacy"}
           </button>
         </div>
       </form>
     </div>
-  )
+  );
 }

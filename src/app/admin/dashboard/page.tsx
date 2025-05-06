@@ -92,7 +92,7 @@ export default function AdminDashboardPage() {
 
     try {
       const res = await fetch("/api/pharmacy/delete-pharmacy", {
-        method: "POST",
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pharmacy_id: pharmacyToDelete._id }),
       });
