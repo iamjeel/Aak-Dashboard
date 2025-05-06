@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const planDeliveries: Record<string, Record<string, number>> = {
   subscription: {
@@ -11,105 +11,162 @@ const planDeliveries: Record<string, Record<string, number>> = {
     Premium: 1500,
   },
   punch_card: {
-    '250': 250,
-    '500': 500,
-    '750': 750,
+    "250": 250,
+    "500": 500,
+    "750": 750,
   },
-}
+};
 
-export default function UpdatePharmacyModal({ isOpen, onClose, pharmacy }: { isOpen: boolean; onClose: () => void, pharmacy: any }) {
-  const router = useRouter()
+export default function UpdatePharmacyModal({
+  isOpen,
+  onClose,
+  pharmacy,
+  onUpdated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  pharmacy: any;
+  onUpdated: any;
+}) {
+  const router = useRouter();
 
-  const defaultPlanType = 'subscription'
-  const defaultPlanName = Object.keys(planDeliveries[defaultPlanType])[0]
+  const defaultPlanType = "subscription";
+  const defaultPlanName = Object.keys(planDeliveries[defaultPlanType])[0];
 
   const [form, setForm] = useState({
-    email: '',
-    username: '',
-    password: '',
-    pharmacy_name: '',
-    contact_name: '',
-    phone: '',
-    address: '',
-    timezone: '',
+    email: "",
+    username: "",
+    password: "",
+    pharmacy_name: "",
+    contact_name: "",
+    phone: "",
+    address: "",
+    timezone: "",
     plan_type: defaultPlanType,
     plan_name: defaultPlanName,
     allocated_deliveries: planDeliveries[defaultPlanType][defaultPlanName],
-  })
+  });
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-    setForm((prev) => ({ ...prev, timezone: tz }))
-  }, [])
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setForm((prev) => ({ ...prev, timezone: tz }));
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  useEffect(() => {
+    if (pharmacy) {
+      const {
+        email,
+        username,
+        pharmacy_name,
+        contact_name,
+        phone,
+        address,
+        timezone,
+        plan_type = "subscription",
+        plan_name,
+      } = pharmacy;
+
+      const safePlanType = planDeliveries[plan_type]
+        ? plan_type
+        : "subscription";
+      const safePlanName =
+        plan_name && planDeliveries[safePlanType][plan_name]
+          ? plan_name
+          : Object.keys(planDeliveries[safePlanType])[0];
+
+      setForm((prev) => ({
+        ...prev,
+        email: email || "",
+        username: username || "",
+        password: "",
+        pharmacy_name: pharmacy_name || "",
+        contact_name: contact_name || "",
+        phone: phone || "",
+        address: address || "",
+        timezone: timezone || prev.timezone,
+        plan_type: safePlanType,
+        plan_name: safePlanName,
+        allocated_deliveries: planDeliveries[safePlanType][safePlanName],
+      }));
+    }
+  }, [pharmacy]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
 
     setForm((prev) => {
-      if (name === 'plan_type') {
-        const newPlanName = Object.keys(planDeliveries[value])[0]
-        const newDeliveries = planDeliveries[value][newPlanName]
+      if (name === "plan_type") {
+        const newPlanName = Object.keys(planDeliveries[value])[0];
+        const newDeliveries = planDeliveries[value][newPlanName];
         return {
           ...prev,
           plan_type: value,
           plan_name: newPlanName,
           allocated_deliveries: newDeliveries,
-        }
+        };
       }
 
-      if (name === 'plan_name') {
-        const newDeliveries = planDeliveries[form.plan_type][value]
+      if (name === "plan_name") {
+        const newDeliveries = planDeliveries[form.plan_type][value];
         return {
           ...prev,
           plan_name: value,
           allocated_deliveries: newDeliveries,
-        }
+        };
       }
 
-      return { ...prev, [name]: value }
-    })
-  }
+      return { ...prev, [name]: value };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     const payload = {
-        ...form,
-        pharmacy_id: pharmacy._id, // VERY IMPORTANT: Pass pharmacy_code
-      };
+      pharmacy_id: pharmacy._id,
+      email: form.email,
+      username: form.username,
+      password: form.password,
+      pharmacyName: form.pharmacy_name,
+      contactName: form.contact_name,
+      phone: form.phone,
+      address: form.address,
+      timezone: form.timezone,
+      planType: form.plan_type,
+      planName: form.plan_name,
+      allocatedDeliveries: form.allocated_deliveries,
+    };
 
-    const res = await fetch('/api/pharmacy/update-pharmacy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/pharmacy/update-pharmacy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    })
+    });
 
-    const result = await res.json()
+    const result = await res.json();
 
     if (!res.ok) {
-      toast.error(`Error: ${result.error}`)
-      setLoading(false)
-      return
+      toast.error(`Error: ${result.error}`);
+      setLoading(false);
+      return;
     }
 
-    toast.success('Pharmacy updated successfully!')
-    setLoading(false)
-    router.refresh()
-    onClose()
-  }
+    toast.success("Pharmacy updated successfully!");
+    setLoading(false);
+    onUpdated();
+    onClose();
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
-<div className="fixed inset-10 flex items-center justify-center bg-black/90 ">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/90 ">
       <div className="bg-black border border-red-500 rounded-lg p-8 w-full max-w-lg text-white relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-white hover:text-gray-400">
-          ✕
-        </button>
-
         <h2 className="text-2xl font-bold mb-6">Update Pharmacy</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
@@ -121,7 +178,9 @@ export default function UpdatePharmacyModal({ isOpen, onClose, pharmacy }: { isO
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-red-500 bg-black text-white rounded"
+              readOnly
+              disabled
+              className="w-full p-2 border border-red-500 bg-black text-white rounded cursor-not-allowed"
             />
           </div>
 
@@ -244,7 +303,9 @@ export default function UpdatePharmacyModal({ isOpen, onClose, pharmacy }: { isO
 
           {/* Allocated Deliveries */}
           <div>
-            <label className="block font-semibold mb-1">Allocated Deliveries</label>
+            <label className="block font-semibold mb-1">
+              Allocated Deliveries
+            </label>
             <input
               name="allocated_deliveries"
               type="number"
@@ -255,17 +316,24 @@ export default function UpdatePharmacyModal({ isOpen, onClose, pharmacy }: { isO
           </div>
 
           {/* Submit */}
-          <div>
+          <div className="flex gap-4 mt-6">
             <button
               type="submit"
               disabled={loading}
-              className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white disabled:opacity-50 w-full"
+              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-white disabled:opacity-50 w-full"
             >
-              {loading ? 'Updating...' : 'Update Pharmacy'}
+              {loading ? "Updating..." : "Update"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md text-white w-full"
+            >
+              Cancel
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

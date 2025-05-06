@@ -30,7 +30,7 @@ const Sidebar = () => {
               👤 Manage Warehouse Admin
             </Link>
             <Link href="/admin/pharmacies" className="block hover:text-red-500">
-              🏥 Manage Pharmacies
+              🏥 Create Pharmacies
             </Link>
           </>
         )}
@@ -41,7 +41,7 @@ const Sidebar = () => {
               🛠️ Admin Dashboard
             </Link>
             <Link href="/admin/pharmacies" className="block hover:text-red-500">
-              🏥 Manage Pharmacies
+              🏥 Create Pharmacies
             </Link>
           </>
         )}

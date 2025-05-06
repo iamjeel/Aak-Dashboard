@@ -160,6 +160,7 @@ export default function AdminDashboardPage() {
         <p>Loading...</p>
       ) : (
         <div className="overflow-x-auto">
+          <h1 className="pb-6 text-xl font-bond">PHARMACIES</h1>
           <table className="min-w-full bg-black border border-red-500">
             <thead>
               <tr className="text-left border-b border-red-500">
@@ -210,6 +211,7 @@ export default function AdminDashboardPage() {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         pharmacy={selectedPharmacy}
+        onUpdated={fetchPharmacies}
       />
       <DeleteConfirmationModal
         isOpen={isDeleteOpen}
@@ -243,11 +245,11 @@ function ChartCard({
   return (
     <div className="bg-black border border-red-500 p-4 rounded shadow">
       <h2 className="text-lg font-semibold mb-4">{title}</h2>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="2 2" />
           <XAxis dataKey={dataKey} />
-          <YAxis />
+          {/* <YAxis /> */}
           <Tooltip />
           <Legend />
           <Bar dataKey="deliveries" fill="#e11d48" />
