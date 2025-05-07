@@ -21,6 +21,7 @@ export const pharmacies = pgTable("pharmacies", {
   planName: text("plan_name").notNull(), // Basic / Premium etc.
 
   allocatedDeliveries: integer("allocated_deliveries").notNull(), // Deliveries Allocated (eg: 500)
+  deliveryUploadFileUrl: text("delivery_upload_file_url"),
 
   // Keeping old fields if needed for tracking usage
   currentCardNumber: integer("current_card_number"),

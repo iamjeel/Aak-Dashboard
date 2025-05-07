@@ -1,0 +1,1 @@
+ALTER TABLE "pharmacies" ADD COLUMN "delivery_upload_file_url" text;

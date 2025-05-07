@@ -19,7 +19,6 @@ interface Pharmacy {
   deliveryTeam?: string;
 }
 
-
 export default function PharmacyTable() {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,9 +178,9 @@ export default function PharmacyTable() {
                       <input
                         id={`file-upload-${pharmacy._id}`}
                         type="file"
-                        accept=".pdf,image/*,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                        accept=".xls,.xlsx"
                         style={{ display: "none" }}
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
                             setUploadedFiles((prev) => ({
@@ -192,6 +191,39 @@ export default function PharmacyTable() {
                               ...prev,
                               [pharmacy._id]: URL.createObjectURL(file),
                             }));
+
+                            // Call the upload-file API to upload the file and save the URL
+                            try {
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              formData.append(
+                                "pharmacyId",
+                                pharmacy._id.toString()
+                              );
+
+                              const response = await fetch(
+                                "/api/pharmacy/upload-file",
+                                {
+                                  method: "POST",
+                                  body: formData,
+                                }
+                              );
+
+                              const data = await response.json();
+                              if (response.ok) {
+                                const { url } = data;
+                                // Store the file URL in the pharmacies table
+                                setFileUrls((prev) => ({
+                                  ...prev,
+                                  [pharmacy._id]: url,
+                                }));
+                                toast.success("File uploaded successfully!");
+                              } else {
+                                toast.error(data.error || "File upload failed");
+                              }
+                            } catch (error) {
+                              toast.error("Error uploading file");
+                            }
                           }
                         }}
                       />
