@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Adjust path if needed
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { db } from "@/lib/pgsql";
 import { pharmacies } from "@/db/schema/pharmacies";
 import { eq } from "drizzle-orm";

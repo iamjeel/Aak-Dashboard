@@ -25,6 +25,7 @@ export default function AdminDashboardPage() {
     planName: string;
     deliveries_allocated: number;
     deliveries_used?: number;
+    deliveryUploadFileUrl?: string | null;
   }
 
   const { data: session } = useSession();
@@ -71,25 +72,54 @@ export default function AdminDashboardPage() {
     fetchPharmacies();
   }, []);
 
-  const fetchPharmacies = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/pharmacy/get-pharmacy");
-      const data = await response.json();
+ const fetchPharmacies = async () => {
+  setLoading(true);
+  try {
+    const pharmacyRes = await fetch("/api/pharmacy/get-pharmacy");
 
-      if (response.ok) {
-        setPharmacies(data);
-        setStats((prev) => ({ ...prev, totalPharmacies: data.length }));
-      } else {
-        toast.error("Failed to fetch pharmacies");
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to fetch pharmacies");
-    } finally {
-      setLoading(false);
+    if (!pharmacyRes.ok) {
+      toast.error("Failed to fetch pharmacies.");
+      return;
     }
-  };
+
+    const pharmacyData = await pharmacyRes.json();
+
+    const combinedPharmacies = await Promise.all(
+      pharmacyData.map(async (pharmacy: Pharmacy) => {
+        try {
+          const fileRes = await fetch(
+            `/api/pharmacy/get-uploaded-file?pharmacyId=${pharmacy._id}`
+          );
+          const fileData = await fileRes.json();
+
+          return {
+            ...pharmacy,
+            delivery_upload_file_url: fileRes.ok ? fileData?.file_url || null : null,
+          };
+        } catch (err) {
+          console.log(`Failed to fetch file for pharmacy ${pharmacy._id}`, err);
+          return {
+            ...pharmacy,
+            delivery_upload_file_url: null,
+          };
+        }
+      })
+    );
+
+
+    setPharmacies(combinedPharmacies);
+    setStats((prev) => ({
+      ...prev,
+      totalPharmacies: combinedPharmacies.length,
+    }));
+  } catch (error) {
+    console.error(error);
+    toast.error("Error fetching pharmacies.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleEditPharmacy = (id: number) => {
     const pharmacy = pharmacies.find((p) => p._id === id);
@@ -127,6 +157,7 @@ export default function AdminDashboardPage() {
       setPharmacyToDelete(null);
     }
   };
+
 
   // const { data: session } = useSession();
 
@@ -214,7 +245,47 @@ export default function AdminDashboardPage() {
                     </button>
                   </td>
                   <td className="p-2">
-                    {uploadedFiles[pharmacy._id] ? (
+                    {pharmacy.deliveryUploadFileUrl ? (
+                      <div className="flex items-center gap-2 group">
+                        {pharmacy.deliveryUploadFileUrl.endsWith(".pdf") ||
+                        pharmacy.deliveryUploadFileUrl.endsWith(".xlsx") ||
+                        pharmacy.deliveryUploadFileUrl.endsWith(".xls") ? (
+                          <div className="relative max-w-[160px] truncate">
+                            <span
+                              className="text-sm text-blue-400 underline cursor-pointer"
+                              onClick={() =>
+                                window.open(
+                                  pharmacy.deliveryUploadFileUrl!,
+                                  "_blank"
+                                )
+                              }
+                            >
+                              Download Deliveries File
+                            </span>
+                            <div className="absolute bottom-[-24px] left-0 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                              Click here to download file
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <img
+                              src={pharmacy.deliveryUploadFileUrl}
+                              alt="preview"
+                              className="w-12 h-12 object-cover rounded cursor-pointer"
+                              onClick={() =>
+                                window.open(
+                                  pharmacy.deliveryUploadFileUrl!,
+                                  "_blank"
+                                )
+                              }
+                            />
+                            <div className="absolute bottom-[-24px] left-0 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                              Click here to download file
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : uploadedFiles[pharmacy._id] ? (
                       <div className="flex items-center gap-2 group">
                         {fileUrls[pharmacy._id]?.startsWith("blob:") &&
                         uploadedFiles[pharmacy._id]?.type.startsWith(
