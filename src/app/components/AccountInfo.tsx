@@ -1,11 +1,34 @@
 'use client'
 
-import usePharmacy from '@/hooks/usePharmacy'
+import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 export default function AccountInfo() {
-  const pharmacy = usePharmacy()
+  const { data: session, status }: any = useSession()
+  const [pharmacy, setPharmacy] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!pharmacy) return <div>Loading account...</div>
+  useEffect(() => {
+    const fetchPharmacy = async () => {
+      if (!session?.user?.email) return
+
+      try {
+        const res = await fetch('/api/pharmacy/get-my-pharmacy')
+        if (!res.ok) throw new Error('Failed to fetch pharmacy')
+        const data = await res.json()
+        setPharmacy(data)
+      } catch (err) {
+        console.error('Error fetching pharmacy:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPharmacy()
+  }, [session])
+
+  if (loading) return <div>Loading account...</div>
+  if (!pharmacy) return <div>No pharmacy info found.</div>
 
   return (
     <div className="bg-[#111] border border-red-600 rounded p-4">

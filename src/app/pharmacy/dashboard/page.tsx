@@ -12,16 +12,16 @@ export default function PharmacyDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6 space-y-8">
-      <h1 className="text-3xl font-bold mb-4">Pharmacy Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-4">Client Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <UsageStats />
         <AccountInfo />
       </div>
 
-      <QuickActions />
+      {/* <QuickActions /> */}
 
-      <Calendar selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      {/* <Calendar selectedDate={selectedDate} onDateChange={setSelectedDate} /> */}
 
       <DeliveryHistory />
     </div>

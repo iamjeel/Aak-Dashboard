@@ -15,7 +15,6 @@ const Sidebar = () => {
       setRole(sessionRole as any);
     }
   }, [session, setRole]);
-
   return (
     <aside className="w-64 h-screen bg-black border-r border-red-500 p-4 hidden md:block">
       <h2 className="text-xl font-bold mb-6 text-red-500">AAK Deliveries</h2>
@@ -30,7 +29,7 @@ const Sidebar = () => {
               👤 Manage Warehouse Admin
             </Link>
             <Link href="/admin/pharmacies" className="block hover:text-red-500">
-              🏥 Create Pharmacies
+              🏥 Create Client
             </Link>
           </>
         )}
@@ -52,7 +51,7 @@ const Sidebar = () => {
               href="/pharmacy/dashboard"
               className="block hover:text-red-500"
             >
-              📊 Pharmacy Dashboard
+              📊 Client Dashboard
             </Link>
             <Link
               href="/pharmacy/request-delivery"

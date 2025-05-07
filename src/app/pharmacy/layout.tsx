@@ -21,9 +21,9 @@ export default function PharmacyLayout({ children }: { children: React.ReactNode
         .eq('user_id', session?.user.id)
         .single()
 
-      if (!session || !pharmacy) {
-        redirect('/login')
-      }
+      // if (!session || !pharmacy) {
+      //   redirect('/login')
+      // }
 
       setLoading(false)
     }

@@ -3,7 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/pgsql";
 import { users } from "@/db/schema/users";
+import { pharmacies } from "@/db/schema/pharmacies";
 import { eq } from "drizzle-orm";
+import type { NextAuthOptions } from "next-auth";
 
 declare module "next-auth" {
   interface User {
@@ -21,7 +23,7 @@ declare module "next-auth" {
   }
 }
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -32,25 +34,48 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // Try user from `users` table
         const [user] = await db
           .select()
           .from(users)
           .where(eq(users.email, credentials.email))
           .limit(1);
 
-        if (!user) return null;
+        if (user) {
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.passwordHash
+          );
+          if (!isPasswordValid) return null;
 
-        const isPasswordValid = await bcrypt.compare(
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        }
+
+        // If not found in users, try `pharmacies` table
+        const [pharmacyUser] = await db
+          .select()
+          .from(pharmacies)
+          .where(eq(pharmacies.email, credentials.email))
+          .limit(1);
+
+        if (!pharmacyUser) return null;
+
+        const isPharmacyPasswordValid = await bcrypt.compare(
           credentials.password,
-          user.passwordHash
+          pharmacyUser.passwordHash
         );
-        if (!isPasswordValid) return null;
+        if (!isPharmacyPasswordValid) return null;
 
         return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          id: pharmacyUser._id.toString(),
+          name: pharmacyUser.contactName,
+          email: pharmacyUser.email,
+          role: "pharmacy", // explicitly set role
         };
       },
     }),
@@ -77,6 +102,8 @@ const handler = NextAuth({
     maxAge: 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

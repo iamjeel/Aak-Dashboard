@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
         <p>Loading...</p>
       ) : (
         <div className="overflow-x-auto">
-          <h1 className="pb-6 text-xl font-bond">PHARMACIES</h1>
+          <h1 className="pb-6 text-xl font-bond">CLIENT</h1>
           <table className="min-w-full bg-black border border-red-500">
             <thead>
               <tr className="text-left border-b border-red-500">
